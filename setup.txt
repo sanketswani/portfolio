@@ -1,0 +1,47 @@
+build and push docker image
+1. docker build --no-cache -t sanketswani121995/portfolio:v2.0 .
+2. docker login -u sanketswani121995 # docker login -u <dockerhubusername> 
+3. use the pat that we generated earlier  
+4. docker push sanketswani121995/portfolio:v2.0   # docker push dockerhubuser/repo:tag
+5. update deployment.yaml file to use the latest tag
+
+setup cloudflare for moving traffic from static web app to pods
+1. bring vms up by using vagrant up command
+2. check if nodes are ready
+3. install ingress controller using : kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/baremetal/deploy.yaml
+4. do k apply for all files in k8s folders
+5. install cloudflare tunnel on controlplane node
+    i. wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+    ii. sudo dpkg -i cloudflared-linux-arm64.deb
+    iii. cloudflared tunnel login => this result in following result. Click on link given and select the hostname
+            Please open the following URL and log in with your Cloudflare account:
+
+            https://dash.cloudflare.com/argotunnel?aud=&callback=https%3A%2F%2Flogin.cloudflareaccess.org%2F0OQzZFevhw6lEw3e4e_Vd5v6ecWMnVHbiWYg_RgxTQE%3D
+
+            Leave cloudflared running to download the cert automatically.
+            2026-01-08T15:51:40Z INF Waiting for login...
+            2026-01-08T15:52:36Z INF Waiting for login...
+            2026-01-08T15:52:39Z INF You have successfully logged in.
+            If you wish to copy your credentials to a server, they have been saved to:
+            /home/vagrant/.cloudflared/cert.pem
+    iv. cloudflared tunnel create sanketswani-k8s => this results in following =>
+        Tunnel credentials written to /home/vagrant/.cloudflared/78ed07ce-cf57-43cf-9dd4-f431fc65b55f.json. cloudflared chose this file based on where your origin certificate was found. Keep this file secret. To revoke these credentials, delete the tunnel.
+        Created tunnel sanketswani-k8s with id 78ed07ce-cf57-43cf-9dd4-f431fc65b55f
+    v. cloudflared tunnel list => this results in following =>
+        You can obtain more detailed information for each tunnel with `cloudflared tunnel info <name/uuid>`
+        ID                                   NAME            CREATED              CONNECTIONS 
+        78ed07ce-cf57-43cf-9dd4-f431fc65b55f sanketswani-k8s 2026-01-08T15:55:15Z
+    vi. sudo mkdir -p /etc/cloudflared
+    vii. sudo vi /etc/cloudflared/config.yaml => add this content to this file => 
+        tunnel: sanketswani-k8s
+        credentials-file: /home/vagrant/.cloudflared/78ed07ce-cf57-43cf-9dd4-f431fc65b55f.json
+
+        ingress:
+        - hostname: sanketswani.in
+            service: http://192.168.30.130:80
+        - service: http_status:404       
+    viii. cloudflared tunnel run sanketswani-k8s => this will start the tunnel
+
+If you want to revert back changes of cloudfare just 
+1. change nameservers in godaddy to default ones
+2. all the dns records are stored in sanketswani.in.txt file on root dir => add all of them to go daddy
