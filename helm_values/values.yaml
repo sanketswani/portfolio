@@ -1,6 +1,6 @@
 image:
   repository: sanketswani121995/portfolio
-  pullSecret: access-docker-hub
+  pullSecret: access-docker-hub #secret already created in kubernetes cluster
 
 replicaCount: 1
 

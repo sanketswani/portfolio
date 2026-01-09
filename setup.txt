@@ -45,3 +45,18 @@ setup cloudflare for moving traffic from static web app to pods
 If you want to revert back changes of cloudfare just 
 1. change nameservers in godaddy to default ones
 2. all the dns records are stored in sanketswani.in.txt file on root dir => add all of them to go daddy
+
+helm setup
+1. helm create helm_values => this cretes the folder with helm chart.yaml, templates and values.yaml file
+2. modify the templates and values file as per necessary changes
+3. helm install
+
+Argocd setup
+1. kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+2. kubectl port-forward svc/argocd-server -n argocd 8080:443 => to start argocd using
+3. username : admin
+4. password : kubectl get secret argocd-initial-admin-secret -n argocd \
+  -o jsonpath="{.data.password}" | base64 -d
+5. create argocd.yaml 
+6. k apply -f argocd.yaml
