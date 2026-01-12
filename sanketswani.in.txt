@@ -1,0 +1,46 @@
+;;
+;; Domain:     sanketswani.in.
+;; Exported:   2026-01-08 16:23:46
+;;
+;; This file is intended for use for informational and archival
+;; purposes ONLY and MUST be edited before use on a production
+;; DNS server.  In particular, you must:
+;;   -- update the SOA record with the correct authoritative name server
+;;   -- update the SOA record with the contact e-mail address information
+;;   -- update the NS record(s) with the authoritative name servers for this domain.
+;;
+;; For further information, please consult the BIND documentation
+;; located on the following website:
+;;
+;; http://www.isc.org/
+;;
+;; And RFC 1035:
+;;
+;; http://www.ietf.org/rfc/rfc1035.txt
+;;
+;; Please note that we do NOT offer technical support for any use
+;; of this zone data, the BIND name server, or any other third-party
+;; DNS software.
+;;
+;; Use at your own risk.
+;; SOA Record
+sanketswani.in	3600	IN	SOA	carl.ns.cloudflare.com. dns.cloudflare.com. 2051955602 10000 2400 604800 3600
+
+;; NS Records
+sanketswani.in.	86400	IN	NS	carl.ns.cloudflare.com.
+sanketswani.in.	86400	IN	NS	laila.ns.cloudflare.com.
+
+;; A Records
+sanketswani.in.	1	IN	A	3.33.251.168 ; cf_tags=cf-proxied:true
+sanketswani.in.	1	IN	A	15.197.225.128 ; cf_tags=cf-proxied:true
+
+;; CNAME Records
+www.sanketswani.in.	1	IN	CNAME	polite-ocean-0d1c49e03.6.azurestaticapps.net. ; cf_tags=cf-proxied:true
+
+;; NS Records
+sanketswani.in.	1	IN	NS	ns66.domaincontrol.com.
+sanketswani.in.	1	IN	NS	ns65.domaincontrol.com.
+
+;; TXT Records
+sanketswani.in.	1	IN	TXT	"MS=ms89368743"
+sanketswani.in.	1	IN	TXT	"_eusg9yqba7ld6ayh42etejgvj61zovk"

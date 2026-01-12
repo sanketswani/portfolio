@@ -1,0 +1,29 @@
+image:
+  repository: sanketswani121995/portfolio
+  pullSecret: access-docker-hub #secret already created in kubernetes cluster
+
+replicaCount: 1
+
+containerPort: 80
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30007
+
+ingress:
+  enabled: true
+  hosts:
+    - host: sanketswani.in
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
