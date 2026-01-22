@@ -25,7 +25,8 @@ jobs:
       - name: Get image version from Chart.yaml
         id: get-version
         run: |
-          VERSION=$(grep '^appVersion:' ./helm_values/chart.yaml | awk '{print $2}' | tr -d '"')
+          pwd
+          VERSION=$(grep '^appVersion:' ./helm_values/Chart.yaml | awk '{print $2}' | tr -d '"')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Login to ACR
