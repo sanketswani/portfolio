@@ -11,7 +11,7 @@ env:
   ACR_NAME: sanketsacr
   IMAGE_NAME: portfolio
   FLUX_REPO: sanketswani/portfolio-fluxcd
-  CHART_PATH: charts/portfolio
+  CHART_PATH: helm_values
   HELM_REPO_PATH: helm-charts/portfolio
 
 jobs:
