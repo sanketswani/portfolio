@@ -1,0 +1,48 @@
+name: Build and Deploy to AKS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get image version from Chart.yaml
+        id: get-version
+        run: |
+          VERSION=$(grep '^appVersion:' chart.yaml | awk '{print $2}' | tr -d '"')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Login to ACR
+        run: |
+          az acr login --name sanketsacr
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t sanketsacr.azurecr.io/portfolio:${{ steps.get-version.outputs.version }} .
+          docker push sanketsacr.azurecr.io/portfolio:${{ steps.get-version.outputs.version }}
+
+      - name: Set AKS context
+        run: |
+          az aks get-credentials --resource-group rg-portfolio-content --name my-first-aks
+
+      - name: Deploy to AKS
+        run: |
+          helm upgrade --install portfolio ./chart \
+                --set image.tag=${{ steps.get-version.outputs.version }} \
+                --wait
