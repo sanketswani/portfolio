@@ -1,0 +1,128 @@
+name: Build, Package Helm & Publish to Flux Repo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_NAME: sanketsacr
+  IMAGE_NAME: portfolio
+  FLUX_REPO: sanketswani/portfolio-fluxcd
+  CHART_PATH: charts/portfolio
+  HELM_REPO_PATH: helm-charts/portfolio
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ----------------------------------------------------
+      # Checkout private repo
+      # ----------------------------------------------------
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------
+      # Azure login (OIDC)
+      # ----------------------------------------------------
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # ---------------------------------------------------- 
+      # Get image version from Chart.yaml
+      # ----------------------------------------------------
+      - name: Get image version from Chart.yaml
+        id: get-version
+        run: |
+          VERSION=$(grep '^appVersion:' ./helm_values/Chart.yaml | awk '{print $2}' | tr -d '"')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # ----------------------------------------------------
+      # Login to ACR
+      # ----------------------------------------------------
+      - name: ACR login
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
+
+      # ----------------------------------------------------
+      # Build & push image to ACR
+      # ----------------------------------------------------
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.get-version.outputs.version }} .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ steps.get-version.outputs.version }}
+
+      # ----------------------------------------------------
+      # Install Helm
+      # ----------------------------------------------------
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      # ----------------------------------------------------
+      # Generate chart version
+      # ----------------------------------------------------
+      - name: Set chart version
+        id: version
+        run: |
+          VERSION="1.0.${GITHUB_RUN_NUMBER}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # ----------------------------------------------------
+      # Package Helm chart
+      # ----------------------------------------------------
+      - name: Package Helm chart
+        run: |
+          helm package $CHART_PATH \
+            --version ${{ steps.version.outputs.version }} \
+            --app-version ${{ steps.get-version.outputs.version }}
+
+      # ----------------------------------------------------
+      # Clone public Flux repo
+      # ----------------------------------------------------
+      - name: Clone Flux repo
+        run: |
+          git clone https://x-access-token:${{ secrets.FLUX_REPO_TOKEN }}@github.com/${FLUX_REPO}.git
+
+      # ----------------------------------------------------
+      # Copy chart & update index.yaml
+      # ----------------------------------------------------
+      - name: Publish chart
+        run: |
+          cd portfolio-fluxcd
+          mkdir -p $HELM_REPO_PATH
+
+          cp ../portfolio-*.tgz $HELM_REPO_PATH/
+
+          helm repo index $HELM_REPO_PATH \
+            --url https://raw.githubusercontent.com/${FLUX_REPO}/main/$HELM_REPO_PATH \
+            --merge $HELM_REPO_PATH/index.yaml
+
+      # ----------------------------------------------------
+      # Update HelmRelease version
+      # ----------------------------------------------------
+      - name: Update HelmRelease
+        run: |
+          cd portfolio-fluxcd
+          sed -i \
+            "s/version: \".*\"/version: \"${{ steps.version.outputs.version }}\"/" \
+            clusters/my-first-aks/helmrelease.yaml
+
+      # ----------------------------------------------------
+      # Commit & push to Flux repo
+      # ----------------------------------------------------
+      - name: Commit and push
+        run: |
+          cd portfolio-fluxcd
+          git config user.email "github-actions@github.com"
+          git config user.name "github-actions"
+
+          git add .
+          git commit -m "release: portfolio chart ${{ steps.version.outputs.version }}"
+          git push
