@@ -17,7 +17,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           ports:
             - containerPort: {{ .Values.containerPort }}
+      {{- if .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}
+      {{- end }}
       resources:
         {{- toYaml .Values.resources | nindent 8 }}
