@@ -44,6 +44,7 @@ jobs:
 
       - name: Deploy to AKS
         run: |
-          helm upgrade --install portfolio ./chart \
+          cd helm_values
+          helm upgrade --install portfolio . \
                 --set image.tag=${{ steps.get-version.outputs.version }} \
                 --wait
