@@ -10,6 +10,7 @@ permissions:
 env:
   ACR_NAME: sanketsacr
   IMAGE_NAME: portfolio
+  CLUSTER_PATH: clusters
   FLUX_REPO: sanketswani/portfolio-fluxcd
   CHART_PATH: helm_values
   HELM_REPO_PATH: helm-charts/portfolio
@@ -98,21 +99,27 @@ jobs:
           cd portfolio-fluxcd
           mkdir -p $HELM_REPO_PATH
 
-          cp ../portfolio-*.tgz $HELM_REPO_PATH/
+          cp ../$IMAGE_NAME-*.tgz $HELM_REPO_PATH/
 
           helm repo index $HELM_REPO_PATH \
             --url https://raw.githubusercontent.com/${FLUX_REPO}/main/$HELM_REPO_PATH \
             --merge $HELM_REPO_PATH/index.yaml
 
       # ----------------------------------------------------
-      # Update HelmRelease version
+      # Update HelmRelease versions for this app
       # ----------------------------------------------------
-      - name: Update HelmRelease
+      - name: Update HelmRelease versions
         run: |
           cd portfolio-fluxcd
-          sed -i \
-            "s/version: \".*\"/version: \"${{ steps.version.outputs.version }}\"/" \
-            clusters/my-first-aks/helmrelease.yaml
+
+          echo "Updating HelmRelease files for app: $IMAGE_NAME"
+
+          for file in $CLUSTER_PATH/apps/$IMAGE_NAME/*.yaml; do
+            echo "Updating $file"
+            sed -i \
+              "s/version: \".*\"/version: \"${{ steps.version.outputs.version }}\"/" \
+              "$file"
+          done 
 
       # ----------------------------------------------------
       # Commit & push to Flux repo
