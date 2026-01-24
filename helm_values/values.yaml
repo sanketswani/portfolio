@@ -33,3 +33,5 @@ resources:
     cpu: 10m
     memory: 50Mi
 
+hpa:
+  enabled: false

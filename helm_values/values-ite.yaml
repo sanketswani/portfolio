@@ -1,0 +1,6 @@
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 1
+  cpuUtilization: 70
+  memoryUtilization: 70

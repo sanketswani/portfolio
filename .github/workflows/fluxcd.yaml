@@ -16,7 +16,7 @@ env:
   HELM_REPO_PATH: helm-charts/portfolio
 
 jobs:
-  release:
+  publish-chart-to-flux-repo:
     runs-on: ubuntu-latest
 
     steps:
