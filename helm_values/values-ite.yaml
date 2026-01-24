@@ -4,3 +4,8 @@ hpa:
   maxReplicas: 1
   cpuUtilization: 70
   memoryUtilization: 70
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30004
