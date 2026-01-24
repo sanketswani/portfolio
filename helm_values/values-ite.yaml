@@ -9,11 +9,3 @@ service:
   type: NodePort
   port: 80
   nodePort: 30004
-
-ingress:
-  enabled: true
-  hosts:
-    - host: sanketswani-ite.in
-      paths:
-        - path: /
-          pathType: Prefix
