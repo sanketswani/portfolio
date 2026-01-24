@@ -2,6 +2,15 @@ name: Build, Package Helm & Publish to Flux Repo
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'environment to deploy to'
+        type: choice
+        options:
+          - ite
+          - default
+        required: true
+        default: default
 
 permissions:
   id-token: write
@@ -12,6 +21,7 @@ env:
   IMAGE_NAME: portfolio
   CLUSTER_PATH: clusters
   FLUX_REPO: sanketswani/portfolio-fluxcd
+  OCI_REPO: oci://sanketsacr.azurecr.io/helm
   CHART_PATH: helm_values
   HELM_REPO_PATH: helm-charts/portfolio
 
@@ -85,41 +95,44 @@ jobs:
             --app-version ${{ steps.get-version.outputs.version }}
 
       # ----------------------------------------------------
+      # Push Helm chart to OCI (ACR)
+      # ----------------------------------------------------
+      - name: Push Helm chart to ACR
+        run: |
+          helm push portfolio-${{ steps.version.outputs.version }}.tgz \
+            $OCI_REPO
+            
+      # ----------------------------------------------------
       # Clone public Flux repo
       # ----------------------------------------------------
       - name: Clone Flux repo
         run: |
           git clone https://x-access-token:${{ secrets.FLUX_REPO_TOKEN }}@github.com/${FLUX_REPO}.git
 
-      # ----------------------------------------------------
-      # Copy chart & update index.yaml
-      # ----------------------------------------------------
-      - name: Publish chart
-        run: |
-          cd portfolio-fluxcd
-          mkdir -p $HELM_REPO_PATH
+          # as using OCI, no need to copy chart to flux repo
+      # # ----------------------------------------------------
+      # # Copy chart & update index.yaml
+      # # ----------------------------------------------------
+      # - name: Publish chart
+      #   run: |
+      #     cd portfolio-fluxcd
+      #     mkdir -p $HELM_REPO_PATH
 
-          cp ../$IMAGE_NAME-*.tgz $HELM_REPO_PATH/
+      #     cp ../$IMAGE_NAME-*.tgz $HELM_REPO_PATH/
 
-          helm repo index $HELM_REPO_PATH \
-            --url https://raw.githubusercontent.com/${FLUX_REPO}/main/$HELM_REPO_PATH \
-            --merge $HELM_REPO_PATH/index.yaml
+      #     helm repo index $HELM_REPO_PATH \
+      #       --url https://raw.githubusercontent.com/${FLUX_REPO}/main/$HELM_REPO_PATH \
+      #       --merge $HELM_REPO_PATH/index.yaml
 
       # ----------------------------------------------------
-      # Update HelmRelease versions for this app
+      # Update HelmRelease versions for this app for the target environment
       # ----------------------------------------------------
       - name: Update HelmRelease versions
         run: |
           cd portfolio-fluxcd
-
-          echo "Updating HelmRelease files for app: $IMAGE_NAME"
-
-          for file in $CLUSTER_PATH/apps/$IMAGE_NAME/*.yaml; do
-            echo "Updating $file"
-            sed -i \
-              "s/version: \".*\"/version: \"${{ steps.version.outputs.version }}\"/" \
-              "$file"
-          done 
+          sed -i \
+            "s/version: \".*\"/version: \"${{ steps.version.outputs.version }}\"/" \
+            $CLUSTER_PATH/apps/$IMAGE_NAME/$IMAGE_NAME-${{ inputs.environment }}.yaml
 
       # ----------------------------------------------------
       # Commit & push to Flux repo
