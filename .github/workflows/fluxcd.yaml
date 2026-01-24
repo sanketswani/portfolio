@@ -100,7 +100,7 @@ jobs:
       - name: Push Helm chart to ACR
         run: |
           helm push portfolio-${{ steps.version.outputs.version }}.tgz \
-            $OCI_REPO
+            $OCI_REPO/$IMAGE_NAME
             
       # ----------------------------------------------------
       # Clone public Flux repo
