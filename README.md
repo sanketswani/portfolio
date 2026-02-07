@@ -151,31 +151,6 @@ helm install portfolio ./helm_values \
 
 ---
 
-## 🔧 Development
-
-### Image Optimization
-
-Convert images to WebP format:
-```bash
-./convert_to_webp.sh
-```
-
-This script:
-- Converts JPG/PNG images to WebP
-- Resizes profile images to 800px width (quality 75)
-- Resizes certification/award images to 1200px width (quality 70)
-- Strips metadata for privacy and size reduction
-
-### Build Tools
-
-For CSS/JS minification during development:
-```bash
-# Manual minification (see scripts in root)
-./convert_to_webp.sh
-```
-
----
-
 ## 📊 Performance Metrics
 
 | Metric | Before | After | Improvement |
@@ -201,42 +176,6 @@ The contact form uses **EmailJS**. To enable submissions:
      publicKey: "YOUR_PUBLIC_KEY"
    });
    ```
-
-### Environment Variables
-
-For sensitive configuration (not in repo):
-- Create `.env` file (in `.gitignore`)
-- Store API keys, credentials, and secrets
-
----
-
-## 🔐 Security
-
-✅ **No sensitive data in repository:**
-- All API keys are client-side (EmailJS public key — safe to expose)
-- Environment variables are in `.gitignore`
-- Git history cleaned of any setup/configuration files
-- Ready for public GitHub repository
-
----
-
-## 📄 License
-
-This project is personal portfolio work. Refer to individual components for their respective licenses:
-- **Bootstrap 5** — MIT License
-- **AOS** — MIT License
-- **GLightbox** — MIT License
-- **Isotope** — GPLv3 (jQuery plugin) / Commercial License
-
----
-
-## 🤝 Contributing
-
-This is a personal portfolio. For suggestions or improvements, feel free to:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-
 ---
 
 ## 📞 Contact
@@ -263,14 +202,6 @@ This is a personal portfolio. For suggestions or improvements, feel free to:
 ### Frontend Technologies
 - [Bootstrap 5 Docs](https://getbootstrap.com/docs/5.0/)
 - [MDN Web Docs](https://developer.mozilla.org/)
-
----
-
-## 🎉 Acknowledgments
-
-**Template:** EasyFolio (Bootstrap Portfolio Template)  
-**Author:** BootstrapMade  
-**License:** https://bootstrapmade.com/license/
 
 ---
 
