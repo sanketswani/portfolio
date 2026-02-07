@@ -2,7 +2,7 @@
 
 A modern, responsive, and performance-optimized portfolio website showcasing technical expertise in **Azure Cloud**, **DevOps**, and **Full-Stack Development**.
 
-**Live Demo:** [sanketswani.in](https://sanketswani.in)
+**Live Demo:** [sanketswani.in](https://www.sanketswani.in)
 
 ---
 
